@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.preprocessing import OneHotEncoder
 
 url = "C:\\Users\\User\\Desktop\ML Projects\\House-Price-Prediction\\HousePricePrediction.xlsx"
 data = pd.read_excel(url)
@@ -47,18 +48,26 @@ float_col = list(decimal[decimal].index)
 # Exterior1st has 16 unique values
 
 # Determining how many counts of each unique value in each object column
-plt.figure(figsize = (18, 36))
-plt.title('Categorical Features: Distribution')
-plt.xticks(rotation = 90)
+# plt.figure(figsize = (18, 36))
+# plt.title('Categorical Features: Distribution')
+# plt.xticks(rotation = 90)
 
-i = 1
-for col in obj_col:
-    y = data[col].value_counts()
-    plt.subplot(1, 4, i)
-    plt.xticks(rotation = 90)
-    sns.barplot(x = list(y.index), y = y)
-    i += 1
-plt.show()
+# i = 1
+# for col in obj_col:
+#     y = data[col].value_counts()
+#     plt.subplot(1, 4, i)
+#     plt.xticks(rotation = 90)
+#     sns.barplot(x = list(y.index), y = y)
+#     i += 1
+# plt.show()
 
 
 # Cleaning data
+data.drop(['Id'], axis = 1, inplace = True) # Dropping Id column
+# Fills the missing entries in SalePrice column with the average of the remaining entries.
+data['SalePrice'] = data['SalePrice'].fillna(data['SalePrice'].mean())
+clean_data = data.dropna() # Drop records with null values
+print(clean_data.isnull().sum()) # There are no entries with null values
+
+
+# One Hot encoder
