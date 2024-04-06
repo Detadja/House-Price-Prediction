@@ -1,15 +1,24 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+from sklearn.svm import SVR
+from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from catboost import CatBoostRegressor
+from sklearn.metrics import r2_score
 
-url = "C:\\Users\\User\\Desktop\ML Projects\\House-Price-Prediction\\HousePricePrediction.xlsx"
+url = "C:\\Users\\denis\\Desktop\\ML Projects\\House-Price-Prediction\\HousePricePrediction.xlsx"
 data = pd.read_excel(url)
 # print(data.head())
 # print(data.shape)
 # print(data.dtypes)
 # print(data.dtypes.unique()) # There are 3 types: int, float and object only.
+
 
 # -----Preprocessing, cleaning, EDA, and One Hot Encoder-----
 
@@ -36,11 +45,11 @@ float_col = list(decimal[decimal].index)
 
 
 # Analyzing different categorical features
-unq_val = []
+# unq_val = []
 # Determining how many unique values are in each object column
 # pd.size counts the total number of values both valid and NaN. pd.count counts the total number of values of only valid entries.
-for col in obj_col:
-    unq_val.append(data[col].unique().size)
+# for col in obj_col:
+#     unq_val.append(data[col].unique().size)
 # plt.figure(figsize = (10, 6))
 # plt.title('No. Unique values of Categorical Features')
 # plt.xticks(rotation = 90)
@@ -56,13 +65,13 @@ for col in obj_col:
 # plt.title('Categorical Features: Distribution')
 # plt.xticks(rotation = 90)
 
-i = 1
-for col in obj_col:
-    y = data[col].value_counts()
-    plt.subplot(1, 4, i)
-    plt.xticks(rotation = 90)
-    sns.barplot(x = list(y.index), y = y)
-    i += 1
+# i = 1
+# for col in obj_col:
+#     y = data[col].value_counts()
+#     plt.subplot(1, 4, i)
+#     plt.xticks(rotation = 90)
+#     sns.barplot(x = list(y.index), y = y)
+#     i += 1
 # plt.show()
 
 
@@ -95,3 +104,43 @@ final_data = pd.concat([final_data, ohe_col], axis = 1)
 # -----Preprocessing, cleaning, EDA, and One Hot Encoder END-----
 
 
+# -----Machine Learning-----
+
+# Splitting data to training and testing
+x = final_data.drop(['SalePrice'], axis = 1) # Seperate the dataset from the label column
+y = final_data['SalePrice'] # Separate the label column from the rest of the dataset
+x_train, x_test, y_train, y_test = train_test_split(x, y, train_size = 0.8, test_size = 0.2, random_state = 0)
+
+# SVM
+svm_reg = svm.SVR() # Initialize SVM (Regressor)
+svm_reg.fit(x_train, y_train) # Train model
+ypred = svm_reg.predict(x_test) # Test model
+print(mean_absolute_percentage_error(y_true = y_test, y_pred = ypred))
+# Results are: 0.1870512931870423 ~ 18.71% error.
+
+# Random Forest Regressor
+rf_reg = RandomForestRegressor(n_estimators = 10) # Initialize Random Forest Regressor
+rf_reg.fit(x_train, y_train) # Train model
+ypred = rf_reg.predict(x_test) # Test model
+print(mean_absolute_percentage_error(y_true = y_test, y_pred = ypred))
+# Results are: 0.19331228305022413 ~ 19.3% error
+
+# Linear Regression
+lin_reg = LinearRegression() # Initialize Linear Regression
+lin_reg.fit(x_train, y_train) # Train model
+ypred = lin_reg.predict(x_test) # Test model
+print(mean_absolute_percentage_error(y_true = y_test, y_pred = ypred))
+# Results are: 0.1874168384159985 ~ 18.74% error
+
+# Bonus: CatBoost Classifier, by YandeX (open source)
+catb_reg = CatBoostRegressor() # Initialize CatBoost Classifier Regression
+catb_reg.fit(x_train, y_train) # Train model
+ypred = catb_reg.predict(x_test)
+print(mean_absolute_percentage_error(y_true = y_test, y_pred = ypred))
+print(r2_score(y_true = y_test, y_pred = ypred))
+# Results are: 0.18178925297425216 ~ 18.17% error
+# R2 score: 0.38351169878113034
+
+# Results somehow show that CatBoost was the ideal and most accurate model as it had the least error with 0.18178925297425216.
+
+# -----Machine Learning-----
